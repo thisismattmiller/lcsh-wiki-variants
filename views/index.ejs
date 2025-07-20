@@ -1,0 +1,253 @@
+<!-- This is a static file -->
+<!-- served from your routes in server.js -->
+
+<!-- You might want to try something fancier: -->
+<!-- html/nunjucks docs: https://mozilla.github.io/nunjucks/ -->
+<!-- pug: https://pugjs.org/ -->
+<!-- haml: http://haml.info/ -->
+<!-- hbs(handlebars): http://handlebarsjs.com/ -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title></title>
+    <meta name="description" content="A cool thing made with Glitch">
+    <link id="favicon" rel="icon" href="https://glitch.com/edit/favicon-app.ico" type="image/x-icon">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- import the webpage's stylesheet -->
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/bulma.min.css">
+
+    
+    <!-- import the webpage's client-side javascript file -->
+    <script src="/client.js"></script>
+    <script src="/vue.js"></script>
+
+    <script>
+      
+      var randos = <%-randos%>;
+    
+    </script>
+  </head>
+  <body>
+    <header>
+
+      
+    </header>
+
+    <main>
+
+      <div id="app">
+
+        <div class="container" v-if="display=='all'" >
+
+            <span>List all: page</span>
+            <a v-if="page != 0" @click="showPage(0,$event)" href="#1">&nbsp;1&nbsp;</a>
+            <span v-if="page == 0">1</span>
+            <a v-if="page != 1" @click="showPage(1,$event)" href="#1">&nbsp;2&nbsp;</a>
+            <span v-if="page == 1">2</span>
+            <a v-if="page != 2" @click="showPage(2,$event)" href="#1">&nbsp;3&nbsp;</a>
+            <span v-if="page == 2">3</span>
+            <a v-if="page != 3" @click="showPage(3,$event)" href="#1">&nbsp;4&nbsp;</a>
+            <span v-if="page == 3">4</span>
+            <hr>
+            <span>Page {{page+1}}</span>
+          <ul>
+            <li v-for="x in pageData"><a @click="search(x.lcsh_pref,$event)">{{x.lcsh_pref}}, {{x.wiki_pref}}</a></li>
+          </ul>
+        </div>
+ 				<div class="search" v-if="display=='search'" >
+            <div style="text-align:center; margin-bottom:10px;">
+              Compare 19,000 Library of Congress Subject Headings to their Wikipedia redirects. <a href="https://medium.com/@thisismattmiller/variants-comparing-lcsh-alt-labels-and-wikipedia-redirects-1a1bc926cc00">More information</a>.
+            </div>
+          <div style="justify-content: center; display:flex;">
+
+            <input style="display:flex; width:50%" class="input is-info is-medium" type="text" v-bind:value="searchVal"  v-on:input="debounceInput($event.target.value)">  
+            <button class="button is-medium is-warning" style="margin-left:0.5em;" @click="rando">
+              Random
+            </button>
+            
+          </div>
+          <div style="justify-content: center; display:flex;">
+            <span>List all: page</span>
+            <a @click="showPage(0,$event)" href="#1">&nbsp;1&nbsp;</a>
+            <a @click="showPage(1,$event)" href="#1">&nbsp;2&nbsp;</a>
+            <a @click="showPage(2,$event)" href="#1">&nbsp;3&nbsp;</a>
+            <a @click="showPage(3,$event)" href="#1">&nbsp;4&nbsp;</a>
+          </div>
+      		
+        
+        
+        <div class="columns search-result-header is-mobile">
+          <div class="column is-half result-lcsh">
+            <h5>
+              LCSH
+            </h5>
+          </div>
+
+          <div class="column is-half">
+            <h5>
+              EN Wiki
+            </h5>
+          </div>
+        </div>
+
+          
+          <div class="search-result"  v-for="r in resultList">
+
+            
+            <div class="columns search-result is-mobile">
+              <div class="column is-half result-lcsh">
+                <h5>
+                  <a  style="color:#4a4a4a; text-decoration:underline" v-bind:href="'http://id.loc.gov/authorities/subjects/' + r.lcid" target="_blank">{{r.lcsh_pref}}</a>
+                </h5>
+                <div class="result-details">
+                  <ul>
+                    <li v-for="lcsh_alt in r.lcsh_alts">{{lcsh_alt}}</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div class="column is-half">
+                  
+                  <h5><a style="color:#4a4a4a; text-decoration:underline" v-bind:href="'http://en.wikipedia.org/wiki/' + r.wiki_pref.replace(/\s/g,'_')" target="_blank">{{r.wiki_pref}}</a></h5>
+                                 <div class="result-details">
+
+                  <ul>
+                    <li v-for="wiki_alt in r.wiki_alts">{{wiki_alt}}</li>
+                  </ul>
+                  </div>
+                  
+                  <div v-if="r.data_alts.length>1">
+                  
+                    <a style="color:#4a4a4a; text-decoration:underline" v-bind:href="'http://wikidata.org/entity/' + r.qid" target="_blank">Wikidata Aliases</a>
+                    
+                    <ul>
+                      <li v-for="data_alt in r.data_alts">{{data_alt}}</li>
+                    </ul>                  
+                  
+                  </div>
+                  
+              </div>
+              
+              
+            </div>
+            
+            
+            
+            
+            
+          </div>
+
+        
+        </div>
+        
+      </div>
+      
+      
+      
+    </main>
+    
+    <script>
+        if (!fetch){alert("Youre browers doesn't support fetch")}
+      
+        var app = new Vue({
+          el: '#app',
+          data: {
+            message: 'Hello Vue!',
+            searchVal: 'coo',
+            resultList: [],
+            display:'search',
+            pageData:[],
+            page:-1
+            
+          },
+          mounted:function(){
+              
+              if (location.hash.trim().length>0){
+                this.search(location.hash.replace('#','').replace(/%20/g,' '))
+              }else{
+                this.search(randos[Math.floor(Math.random() * randos.length)])
+              }
+              
+              
+          },          
+          
+          methods:{
+            
+            rando: function(){
+            
+              this.search(randos[Math.floor(Math.random() * randos.length)])            
+            
+            },
+            showPage: function(page, event){
+
+                fetch(`/all/?page=${page}`)
+                .then((response) => {
+                  return response.json();
+                })
+                .then((myJson) => {
+                  this.pageData = myJson;
+                  this.$data.page = page
+                  console.log(myJson)
+                  this.$data.display = 'all'                  
+                });
+              
+
+                event.preventDefault()
+              
+            },
+            search: function(val, event){
+
+              if(history.pushState) {
+                  history.pushState(null, null, '#'+val);
+              }
+              else {
+                  location.hash = '#'+val;
+              }
+              
+              if (event){
+                event.preventDefault()
+              }
+              this.$data.display = "search"
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+
+
+              
+              
+              
+              this.$data.searchVal = val;
+              fetch(`/search/?searchval=${val}`)
+                .then((response) => {
+                  return response.json();
+                })
+                .then((myJson) => {
+                  this.resultList = myJson;
+                });
+            },
+            debounceInput: _.debounce(function (val) {
+              this.search(val)
+            }, 500)
+            
+            
+          }
+        })    
+        
+        
+        
+        
+    
+    </script>
+    
+
+
+    <!-- include the Glitch button to show what the webpage is about and
+          to make it easier for folks to view source and remix -->
+    <div class="glitchButton" style="position:fixed;top:20px;right:20px;"></div>
+    <script src="https://button.glitch.me/button.js"></script>
+
+  </body>
+</html>

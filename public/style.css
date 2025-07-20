@@ -1,0 +1,39 @@
+/* styles */
+/* called by your view template */
+
+
+.search-result{
+  background:whitesmoke;
+  margin:0 20px 0 20px !important;
+  
+}
+.search-result-header{
+  margin-bottom:0 !important;
+  margin-top:20px !important;
+}
+
+.result-lcsh {
+  border-right:solid 1px #ddd;
+}
+.result-lcsh ul{
+  text-align:right;
+}
+
+h5{
+  font-weight:bold !important;
+}
+.result-lcsh h5{
+  text-align:right; 
+  
+}
+
+.result-details{
+  padding:5px 0 0 5px;
+}
+
+li::before {
+  content: "- ";
+}
+#app{
+  margin-top:2em;
+}
