@@ -34,7 +34,7 @@ app.get('/search', function(req, res) {
   sql = sql + ' LIMIT 100';
   
   db.all(sql, '%'+req.query.searchval+'%', function(err, rows) {
-    console.log(sql);
+
     if (err){console.log(err);}
     var results = [];      
     rows.forEach((r)=>{
